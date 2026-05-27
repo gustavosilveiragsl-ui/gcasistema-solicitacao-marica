@@ -69,6 +69,37 @@
       overflow-x: hidden;
     }
 
+
+    /* ── LOGIN SOL ── */
+#telaLoginSol {
+  position: fixed; inset: 0; z-index: 9000;
+  background: linear-gradient(135deg, #0a0f1e 0%, #1a1e3d 30%, #1a237e 60%, #0d1b4b 100%);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.login-sol-box {
+  background: rgba(17,24,39,0.95);
+  border: 1px solid rgba(0,184,230,0.25);
+  border-radius: 22px;
+  padding: 36px 32px;
+  width: min(420px, 96vw);
+  text-align: center;
+}
+.login-sol-box img { height: 52px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(0,184,230,0.4)); }
+.login-sol-box h2 { font-family: 'Syne', sans-serif; font-size: 20px; color: #fff; margin-bottom: 4px; }
+.login-sol-box p  { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+.login-sol-field  { margin-bottom: 14px; text-align: left; }
+.login-sol-field label { font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+.login-sol-btn {
+  width: 100%; background: linear-gradient(135deg, #00B8E6, #0369a1);
+  border: none; border-radius: 12px; padding: 14px;
+  color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: 'Syne', sans-serif; margin-top: 4px; transition: all 0.2s;
+}
+.login-sol-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,184,230,0.3); }
+.login-sol-btn:disabled { background: rgba(71,85,105,0.4); cursor: not-allowed; transform: none; box-shadow: none; }
+.login-sol-erro { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; padding: 10px; font-size: 13px; color: #ef4444; margin-top: 12px; display: none; }
+    
+
     /* ── FUNDO ANIMADO ── */
     body::before {
       content: '';
@@ -624,6 +655,29 @@
 </head>
 <body>
 
+  <!-- TELA DE LOGIN -->
+<div id="telaLoginSol">
+  <div class="login-sol-box">
+    <img src="https://i.postimg.cc/hvM5wcMw/LOGOTIPO-GCA.png" alt="GCA">
+    <h2>Solicitação de Material</h2>
+    <p>Sistema GCA · Almoxarifado</p>
+    <div class="login-sol-field">
+      <label>Matrícula</label>
+      <input id="loginSolMatricula" type="text" placeholder="Digite sua matrícula..."
+        onkeydown="if(event.key==='Enter') document.getElementById('loginSolSenha').focus()">
+    </div>
+    <div class="login-sol-field">
+      <label>Senha</label>
+      <input id="loginSolSenha" type="password" placeholder="Digite sua senha..."
+        onkeydown="if(event.key==='Enter') fazerLoginSol()">
+    </div>
+    <button class="login-sol-btn" id="btnLoginSol" onclick="fazerLoginSol()">
+      Entrar
+    </button>
+    <div class="login-sol-erro" id="loginSolErro"></div>
+  </div>
+</div>
+
   <!-- Modal de Novidades -->
 <div id="modalNovidades" style="
   display:none; position:fixed; inset:0;
@@ -746,6 +800,13 @@
   </div>
   <div style="flex:1;"></div>
   <div class="header-badge">SOC - COMERCIAL</div>
+  <div id="headerUsuarioSol" style="display:none; align-items:center; gap:10px;">
+  <span id="headerNomeSol" style="font-size:13px; color:#94a3b8;"></span>
+  <button onclick="logoutSol()"
+    style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25);
+    border-radius:8px; padding:6px 14px; color:#ef4444; font-size:12px; cursor:pointer;">
+    Sair
+  </button>
 </div>
 
 <!-- TABS -->
@@ -1021,19 +1082,110 @@ var _solAtual   = null;
 var _durPendente = null;
 
 // ── INICIALIZAÇÃO ──
-google.script.run
-  .withSuccessHandler(function(res) {
-    document.getElementById('telaLoading').style.display = 'none';
-    if (!res || !res.sucesso) { alert('Erro ao carregar dados: ' + (res?.erro || 'desconhecido')); return; }
-    _dados = res;
-    popularArmazens();
-    document.getElementById('telaNova').style.display = 'block';
-  })
-  .withFailureHandler(function(err) {
-    document.getElementById('telaLoading').style.display = 'none';
-    alert('Erro de conexão: ' + err.message);
-  })
-  .carregarDadosParaSolicitacao();
+// ── AUTENTICAÇÃO ──
+var _usuarioSolicitacao = null;
+
+function fazerLoginSol() {
+  const matricula = document.getElementById('loginSolMatricula').value.trim();
+  const senha     = document.getElementById('loginSolSenha').value.trim();
+  const erro      = document.getElementById('loginSolErro');
+  const btn       = document.getElementById('btnLoginSol');
+
+  if (!matricula || !senha) {
+    erro.textContent = 'Preencha a matrícula e a senha.';
+    erro.style.display = 'block';
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = '⏳ Verificando...';
+  erro.style.display = 'none';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      btn.disabled    = false;
+      btn.textContent = 'Entrar';
+      if (!res.sucesso) {
+        erro.textContent   = '❌ ' + res.erro;
+        erro.style.display = 'block';
+        return;
+      }
+      _usuarioSolicitacao = res;
+      document.getElementById('telaLoginSol').style.display = 'none';
+
+      // Mostra nome no header
+      document.getElementById('headerNomeSol').textContent = '👤 ' + res.nome;
+      document.getElementById('headerUsuarioSol').style.display = 'flex';
+
+      // Carrega os dados do sistema
+      carregarDadosSistema();
+    })
+    .withFailureHandler(function(err) {
+      btn.disabled    = false;
+      btn.textContent = 'Entrar';
+      erro.textContent   = '❌ Erro de conexão. Tente novamente.';
+      erro.style.display = 'block';
+    })
+    .loginSolicitacao(matricula, senha);
+}
+
+function logoutSol() {
+  _usuarioSolicitacao = null;
+  document.getElementById('telaLoginSol').style.display = 'flex';
+  document.getElementById('headerUsuarioSol').style.display = 'none';
+  document.getElementById('loginSolMatricula').value = '';
+  document.getElementById('loginSolSenha').value = '';
+  document.getElementById('loginSolErro').style.display = 'none';
+  document.getElementById('telaLoading').style.display = 'none';
+  document.getElementById('telaNova').style.display = 'none';
+  document.getElementById('telaAcomp').style.display = 'none';
+}
+
+function carregarDadosSistema() {
+  document.getElementById('telaLoading').style.display = 'block';
+  document.getElementById('telaNova').style.display = 'none';
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      document.getElementById('telaLoading').style.display = 'none';
+      if (!res || !res.sucesso) { alert('Erro ao carregar dados: ' + (res?.erro || 'desconhecido')); return; }
+      _dados = res;
+      popularArmazens();
+      document.getElementById('telaNova').style.display = 'block';
+
+      // ── Trava o solicitante no usuário logado ──
+      const solicitante = (_dados.solicitantes || []).find(s =>
+        s.id === _usuarioSolicitacao.colaboradorId
+      );
+      if (solicitante) {
+        selecionarSolicitante(
+          solicitante.id,
+          solicitante.nome,
+          solicitante.funcao,
+          solicitante.setor
+        );
+        // Trava o campo — não pode mudar
+        document.getElementById('solBuscaSolicitante').disabled = true;
+        document.getElementById('solBuscaSolicitante').style.opacity = '0.6';
+        document.getElementById('solBuscaSolicitante').style.cursor  = 'not-allowed';
+      }
+
+      // ── Trava o acompanhar no usuário logado ──
+      const acompInput = document.getElementById('acompBuscaNome');
+      if (acompInput) {
+        acompInput.value    = _usuarioSolicitacao.nome;
+        acompInput.disabled = true;
+        acompInput.style.opacity = '0.6';
+        acompInput.style.cursor  = 'not-allowed';
+        document.getElementById('acompSolId').value = _usuarioSolicitacao.colaboradorId;
+      }
+    })
+    .withFailureHandler(function(err) {
+      document.getElementById('telaLoading').style.display = 'none';
+      alert('Erro de conexão: ' + err.message);
+    })
+    .carregarDadosParaSolicitacao();
+}
 
 // ── TABS ──
 function mudarAba(aba) {
