@@ -697,35 +697,35 @@
 
     <!-- Título -->
     <div style="font-size:11px; font-weight:700; color:#00B8E6; text-transform:uppercase;
-      letter-spacing:2px; margin-bottom:6px;">📢 Novidades no Sistema GCA</div>
+      letter-spacing:2px; margin-bottom:6px;">📢 Atualização Importante</div>
     <div style="font-size:13px; color:#64748b; margin-bottom:20px;">
-      Conforme alinhado em nossa última reunião, realizamos melhorias para facilitar o processo de entrega e assinatura de materiais.
+      O sistema de solicitações recebeu uma atualização de segurança.
     </div>
 
     <!-- Itens -->
     <div style="text-align:left; display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
 
       <div style="background:rgba(0,184,230,0.06); border:1px solid rgba(0,184,230,0.15); border-radius:12px; padding:12px 16px; display:flex; gap:12px; align-items:flex-start;">
-        <span style="font-size:20px; flex-shrink:0;">⏰</span>
+        <span style="font-size:20px; flex-shrink:0;">🔐</span>
         <div>
           <div style="font-size:13px; font-weight:700; color:#e2e8f0; margin-bottom:3px;">Prazo do link de assinatura ampliado</div>
-          <div style="font-size:12px; color:#64748b;">O colaborador agora tem <strong style="color:#00B8E6;">10 dias</strong> para assinar após o atendimento — mais tempo para materiais que chegam por transporte.</div>
+          <div style="font-size:12px; color:#64748b;"> partir de agora o sistema exige <strong style="color:#00B8E6;">matrícula e senha</strong> para acessar. Cada lider terá seu próprio acesso.</div>
         </div>
       </div>
 
       <div style="background:rgba(0,184,230,0.06); border:1px solid rgba(0,184,230,0.15); border-radius:12px; padding:12px 16px; display:flex; gap:12px; align-items:flex-start;">
-        <span style="font-size:20px; flex-shrink:0;">🖨️</span>
+        <span style="font-size:20px; flex-shrink:0;">🔒</span>
         <div>
-          <div style="font-size:13px; font-weight:700; color:#e2e8f0; margin-bottom:3px;">Ficha impressa junto ao material</div>
-          <div style="font-size:12px; color:#64748b;">Será enviada uma folha com a lista de itens e o QR Code. O colaborador escaneia e assina na hora da retirada — sem precisar buscar o link no WhatsApp.</div>
+          <div style="font-size:13px; font-weight:700; color:#e2e8f0; margin-bottom:3px;">Solicitante travado no seu usuário</div>
+          <div style="font-size:12px; color:#64748b;">Não será mais possível fazer solicitações em nome de outro lider. Cada um acessa com suas próprias credenciais.</div>
         </div>
       </div>
 
       <div style="background:rgba(0,184,230,0.06); border:1px solid rgba(0,184,230,0.15); border-radius:12px; padding:12px 16px; display:flex; gap:12px; align-items:flex-start;">
-        <span style="font-size:20px; flex-shrink:0;">🔗</span>
+        <span style="font-size:20px; flex-shrink:0;">🚫</span>
         <div>
-          <div style="font-size:13px; font-weight:700; color:#e2e8f0; margin-bottom:3px;">Link de assinatura na tela de acompanhamento</div>
-          <div style="font-size:12px; color:#64748b;">Após o almoxarifado atender o pedido, o link e o QR Code de assinatura ficam disponíveis diretamente nesta página.</div>
+          <div style="font-size:13px; font-weight:700; color:#e2e8f0; margin-bottom:3px;">Problemas de acesso</div>
+          <div style="font-size:12px; color:#64748b;">Caso tenha problemas de acesso entre em contato com o almoxarifado.</div>
         </div>
       </div>
 
@@ -753,19 +753,19 @@
 
 <script>
   var _novidadesTimer = null;
-  var _novidadesSegundos = 30;
+  var _novidadesSegundos = 20;
 
   (function() {
-    const validade    = new Date('2026-05-06T23:59:59');
-    const vizualizacoes = parseInt(localStorage.getItem('bannerNovidades_v1') || '0');
+    const validade    = new Date('2026-05-31T23:59:59');
+    const vizualizacoes = parseInt(localStorage.getItem('bannerNovidades_v2') || '0');
     const modal       = document.getElementById('modalNovidades');
 
-    if (!modal || new Date() >= validade || vizualizacoes >= 5) return;
+    if (!modal || new Date() >= validade || vizualizacoes >= 3) return;
 
     modal.style.display = 'flex';
 
     // Incrementa contador de visualizações
-    localStorage.setItem('bannerNovidades_v1', String(vizualizacoes + 1));
+    localStorage.setItem('bannerNovidades_v2', String(vizualizacoes + 1));
 
     // Inicia contagem regressiva
     const barra    = document.getElementById('barraNovidades');
