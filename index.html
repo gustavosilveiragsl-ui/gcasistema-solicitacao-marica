@@ -1326,7 +1326,10 @@ function adicionarItemSol() {
   'Roubado':              'roubo',
   'Troca por laudo':      'troca recuperação'
 };
-const motivoFinal = motivo === 'Outro' ? outro : (motivoMap[motivo] || motivo);
+  // motivoValidacao: convertido → usado só nas verificações de limite/dotação
+  const motivoValidacao = motivo === 'Outro' ? outro : (motivoMap[motivo] || motivo);
+  // motivoFinal: original → é o que fica salvo na solicitação
+  const motivoFinal = motivo === 'Outro' ? outro : motivo;
   const durabilidade = parseInt(document.getElementById('solItemQtd').dataset.durabilidade) || 0;
   const colabId      = document.getElementById('solColabId').value;
 
@@ -1336,7 +1339,7 @@ const motivoFinal = motivo === 'Outro' ? outro : (motivoMap[motivo] || motivo);
   };
 
   const prosseguirComDurabilidade = (isTrocaTamanho) => {
-    if (colabId && durabilidade > 0 && motivoFinal !== 'Entrega inicial') {
+    if (colabId && durabilidade > 0 && motivoValidacao !== 'entrega inicial') {
       google.script.run
         .withSuccessHandler(function(resDur) {
           reabilitarBtn();
@@ -1422,7 +1425,7 @@ const motivoFinal = motivo === 'Outro' ? outro : (motivoMap[motivo] || motivo);
         prosseguirComEstoque();
       })
       .withFailureHandler(function() { prosseguirComEstoque(); })
-      .validarDotacaoColaborador(colabId, itemId, nome, motivoFinal);
+      .validarDotacaoColaborador(colabId, itemId, nome, motivoValidacao);
   };
 
   // 1ª verificação: nível do colaborador
