@@ -1317,7 +1317,16 @@ function adicionarItemSol() {
   btn.disabled = true;
   btn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">📦</span> Verificando...';
 
-  const motivoFinal  = motivo === 'Outro' ? outro : motivo;
+  const motivoMap = {
+  'Entrega inicial':      'entrega inicial',
+  'Reposição':            'Reposição',
+  'Desgastado':           'troca descarte',
+  'Avariado por mau uso': 'troca descarte',
+  'Perdido':              'perca',
+  'Roubado':              'roubo',
+  'Troca por laudo':      'troca recuperação'
+};
+const motivoFinal = motivo === 'Outro' ? outro : (motivoMap[motivo] || motivo);
   const durabilidade = parseInt(document.getElementById('solItemQtd').dataset.durabilidade) || 0;
   const colabId      = document.getElementById('solColabId').value;
 
@@ -1553,7 +1562,14 @@ function enviarSolicitacao() {
 function novaSolicitacao() {
   document.getElementById('formSolicitacao').style.display = 'block';
   document.getElementById('telaSucesso').style.display     = 'none';
-  document.getElementById('solBuscaSolicitante').value = '';
+
+  // Libera o campo temporariamente para poder limpar e re-popular
+  const campoSol = document.getElementById('solBuscaSolicitante');
+  campoSol.disabled      = false;
+  campoSol.style.opacity = '';
+  campoSol.style.cursor  = '';
+  campoSol.value = '';
+
   document.getElementById('solSolicitanteId').value    = '';
   document.getElementById('solBuscaColab').value       = '';
   document.getElementById('solColabId').value          = '';
@@ -1561,9 +1577,23 @@ function novaSolicitacao() {
   document.getElementById('solObsGeral').value         = '';
   document.getElementById('cardSolicitante').style.display = 'none';
   document.getElementById('cardColab').style.display       = 'none';
-  _itensSol = []; _prioridade = 'Normal';
+  _itensSol   = [];
+  _prioridade = 'Normal';
   setPrioridade('Normal');
   renderItensSol();
+
+  // ── Re-aplica o solicitante do usuário logado e trava o campo novamente ──
+  if (_usuarioSolicitacao && _dados) {
+    const sol = (_dados.solicitantes || []).find(function(s) {
+      return s.id === _usuarioSolicitacao.colaboradorId;
+    });
+    if (sol) {
+      selecionarSolicitante(sol.id, sol.nome, sol.funcao, sol.setor);
+      campoSol.disabled      = true;
+      campoSol.style.opacity = '0.6';
+      campoSol.style.cursor  = 'not-allowed';
+    }
+  }
 }
 
 // ── ACOMPANHAR ──
